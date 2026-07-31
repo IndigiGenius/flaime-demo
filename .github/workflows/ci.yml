@@ -1,0 +1,76 @@
+# CI for flaime-demo (26Q3-REPO-08). Mirrors flaime-serving's workflow
+# (REPO-01): lint without deps, scope gate before the expensive job, single
+# test job with uv caching and a hard timeout.
+#
+# Difference from serving: no vendor tamper gate (nothing is vendored here),
+# and the test job needs a token to install the private flaime-serving pin.
+
+name: CI
+
+on:
+  # No base-branch filter: the 26Q3-REPO extraction lands as stacked PRs
+  # (base = parent card's branch), and a `branches: [main]` filter would
+  # skip CI on every stacked PR — each card must gate on its own CI.
+  pull_request:
+    paths-ignore:
+      - "**.md"
+      - ".gitignore"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+      - name: Check formatting
+        run: uvx 'ruff>=0.12' format --check .
+      - name: Lint
+        run: uvx 'ruff>=0.12' check .
+
+  gates:
+    # The LoC budget gate needs no dependencies — run it before the expensive
+    # test job so scope violations fail fast.
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    steps:
+      - uses: actions/checkout@v7
+      - name: LoC budget gate
+        run: bash scripts/check_loc_budget.sh
+
+  test:
+    needs: [lint, gates]
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.draft == false
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libsndfile1 ffmpeg
+      - name: Install uv
+        uses: astral-sh/setup-uv@v7
+        with:
+          version: "latest"
+          enable-cache: true
+      - name: Rewrite flaime-serving URL for token auth
+        env:
+          FLAIME_SERVING_PAT: ${{ secrets.FLAIME_SERVING_PAT }}
+        run: bash scripts/ci/rewrite_serving_url.sh
+      - name: Sync environment
+        run: uv sync
+      - name: Type check
+        run: uv run mypy flaime_demo/ tests/
+      - name: Tests
+        run: uv run pytest

@@ -31,7 +31,9 @@ def test_declares_the_three_runtime_dependencies(pyproject: dict[str, Any]) -> N
     assert "soundfile>=0.12.0" in deps
 
 
-def test_flaime_serving_is_pinned_to_an_immutable_rev(pyproject: dict[str, Any]) -> None:
+def test_flaime_serving_is_pinned_to_an_immutable_rev(
+    pyproject: dict[str, Any],
+) -> None:
     source = pyproject["tool"]["uv"]["sources"]["flaime-serving"]
     assert "flaime-serving" in source["git"]
     assert source.get("rev"), "pin a rev, not a branch — branches move under us"

@@ -1,0 +1,88 @@
+[project]
+name = "flaime-demo"
+version = "0.1.0"
+description = "Offline Streamlit demo UI for FLAIME ASR — runs on a laptop, audio never leaves the device"
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [{ name = "FLAIR" }]
+dependencies = [
+    # flaime-serving is the ONLY first-party dependency. FLAIME is absent from
+    # this environment entirely (26Q3-REPO epic boundary) — even bench_latency
+    # routes through the vendored factory (REPO-12).
+    "flaime-serving",
+    "streamlit>=1.40.0",
+    "soundfile>=0.12.0",
+    # errors.py imports numpy directly, so it is declared directly. It also
+    # arrives transitively via flaime-serving; relying on that would be a
+    # latent break the first time serving drops it.
+    "numpy>=1.24",
+]
+
+[tool.uv.sources]
+# Pinned to an immutable rev, not a branch: the demo must build the same way
+# next month. Bumping the pin is a visible one-line diff. SSH for local dev;
+# CI rewrites this to HTTPS+token (scripts/ci/rewrite_serving_url.sh), the
+# same pattern FLAIME uses for PhoNet.
+flaime-serving = { git = "ssh://git@github.com/IndigiGenius/flaime-serving.git", rev = "db661917ae374c33c558ebc91ca676e7cfa91e38" }
+
+[dependency-groups]
+dev = [
+    "pytest>=8.0",
+    "pytest-mock>=3.14.0",
+    "mypy>=1.17",
+    "ruff>=0.12",
+    "pre-commit>=3.7",
+]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["flaime_demo*"]
+exclude = ["tests*"]
+
+# Ruff / mypy settings mirror flaime-serving's (26Q3-REPO-01).
+[tool.ruff]
+line-length = 88
+target-version = "py312"
+
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "C",  # flake8-comprehensions
+    "B",  # flake8-bugbear
+    "UP", # pyupgrade
+]
+ignore = [
+    "E501", # line too long (handled by formatter)
+    "B008", # do not perform function calls in argument defaults
+    "C901", # too complex
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["E501", "C901"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+python_classes = "Test*"
+python_functions = "test_*"
+addopts = "-v --tb=short"
+
+[tool.mypy]
+python_version = "3.12"
+ignore_missing_imports = true
+no_strict_optional = true
+explicit_package_bases = true
