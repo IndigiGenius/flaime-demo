@@ -11,10 +11,16 @@ From: python:3.12-slim
     uv.lock /app/uv.lock
     README.md /app/README.md
     flaime_demo /app/flaime_demo
-    configs /app/configs
+    # NOTE: no `configs` entry — routing YAMLs arrive in 26Q3-REPO-11. Apptainer
+    # aborts the build on a missing %files source, so the line cannot be staged
+    # here ahead of the files. Add it back in REPO-11, in the same diff as the
+    # configs themselves.
 
 %post
-    set -euo pipefail
+    # POSIX sh only: Apptainer runs %post under /bin/sh, which on
+    # python:3.12-slim is dash — `set -o pipefail` is a bash extension and
+    # aborts the build there.
+    set -eu
     export DEBIAN_FRONTEND=noninteractive
 
     # git: build-time only (cloning the pinned flaime-serving dependency)

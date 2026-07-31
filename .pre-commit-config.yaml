@@ -13,15 +13,21 @@ repos:
       - id: debug-statements
       - id: check-docstring-first
 
+  # Pinned to match CI and the locked dev group exactly — a drifting hook
+  # reformats differently than CI and the disagreement surfaces as a mystery
+  # failure on someone else's PR.
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.12.0
+    rev: v0.16.1
     hooks:
       - id: ruff
         args: [--fix, --exit-non-zero-on-fix]
       - id: ruff-format
 
+  # mirrors-mypy publishes no 2.x tag, so this cannot match the locked mypy
+  # (2.3.0) the way ruff does. v1.19.1 is the closest available; CI's
+  # `uv run mypy` is authoritative when the two disagree.
   - repo: https://github.com/pre-commit/mirrors-mypy
-    rev: v1.17.1
+    rev: v1.19.1
     hooks:
       - id: mypy
         # tests/ included (matching serving): CI type-checks tests/, and the

@@ -11,9 +11,12 @@ on:
   # No base-branch filter: the 26Q3-REPO extraction lands as stacked PRs
   # (base = parent card's branch), and a `branches: [main]` filter would
   # skip CI on every stacked PR — each card must gate on its own CI.
+  # No paths-ignore for "**.md": tests/test_scaffold.py asserts the README
+  # documents the checkpoint contract and the offline requirement, so a
+  # README-only PR is exactly when that assertion must run. Skipping it there
+  # would let a PR delete the contract table and merge green.
   pull_request:
     paths-ignore:
-      - "**.md"
       - ".gitignore"
 
 concurrency:
@@ -33,10 +36,13 @@ jobs:
         uses: astral-sh/setup-uv@v7
         with:
           version: "latest"
+      # Exact pin, matching .pre-commit-config.yaml and the locked dev group.
+      # A floating spec lets a new ruff release fail CI on unrelated PRs while
+      # `pre-commit run --all-files` still passes locally.
       - name: Check formatting
-        run: uvx 'ruff>=0.12' format --check .
+        run: uvx 'ruff==0.16.1' format --check .
       - name: Lint
-        run: uvx 'ruff>=0.12' check .
+        run: uvx 'ruff==0.16.1' check .
 
   gates:
     # The LoC budget gate needs no dependencies — run it before the expensive
@@ -64,8 +70,12 @@ jobs:
         with:
           version: "latest"
           enable-cache: true
+      # --frozen: fail on a stale lock rather than silently re-resolving. The
+      # README and the Apptainer build both promise the lock is authoritative,
+      # so CI must verify it — otherwise bumping the flaime-serving rev without
+      # relocking goes green here and breaks the container build.
       - name: Sync environment
-        run: uv sync
+        run: uv sync --frozen
       - name: Type check
         run: uv run mypy flaime_demo/ tests/
       - name: Tests

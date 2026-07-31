@@ -4,8 +4,6 @@ Offline Streamlit demo for FLAIME ASR — runs fully local on a laptop; audio ne
 leaves the device (data sovereignty). Depends on `flaime-serving` only; FLAIME is
 absent from this environment entirely.
 
-Private under IndigiGenius, consistent with community data governance.
-
 ## Status
 
 Scaffolded by `26Q3-REPO-08`. The UI itself (`app.py`) arrives in `26Q3-REPO-09`,
@@ -48,5 +46,5 @@ uv run pytest
 bash scripts/check_loc_budget.sh
 ```
 
-`LOC_BUDGET` caps non-test source in `flaime_demo/`. Raising it is a visible
-one-line diff in the same PR, never a silent drift.
+`LOC_BUDGET` caps non-test source in `flaime_demo/`. Raising it is a deliberate,
+reviewed change in the same PR as the code that needs it, never a silent drift.

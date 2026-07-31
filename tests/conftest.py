@@ -8,15 +8,12 @@ import pytest
 
 
 @pytest.fixture(scope="session")
-def repo_root() -> Path:
-    """Repo root, found by walking up to the directory holding `.git`.
+def repo_root(pytestconfig: pytest.Config) -> Path:
+    """Repo root, from pytest's own rootdir.
 
-    The scaffold tests read files by path instead of importing `flaime_demo`,
-    so they need an anchor that resolves before `pyproject.toml` exists —
-    which is exactly when `pytestconfig.rootpath` cannot be trusted.
+    `pyproject.toml` carries `[tool.pytest.ini_options]`, so pytest resolves
+    rootdir to the repo root. Deriving it from `.git` instead would raise in any
+    checkout-less tree — an sdist, an exported tarball, or the suite running
+    from /app inside the built container.
     """
-    here = Path(__file__).resolve()
-    for candidate in (here, *here.parents):
-        if (candidate / ".git").exists():
-            return candidate
-    raise RuntimeError("repo root not found: no .git directory above tests/")
+    return Path(pytestconfig.rootpath)

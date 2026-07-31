@@ -9,6 +9,15 @@ dist/
 .venv/
 .env
 
+# Build artifacts and model weights — never committed (see the README's
+# checkpoint contract). The Apptainer image builds to the repo root, and
+# weights live in CHECKPOINTS_DIR on the host.
+*.sif
+*.pt
+*.pth
+*.ckpt
+*.safetensors
+
 # Tooling caches
 .mypy_cache/
 .ruff_cache/

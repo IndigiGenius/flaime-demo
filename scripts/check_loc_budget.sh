@@ -9,7 +9,10 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 budget=$(tr -d '[:space:]' < LOC_BUDGET)
-actual=$(find flaime_demo -name '*.py' -print0 | xargs -0 --no-run-if-empty cat | wc -l)
+# `-exec cat {} +` rather than `find -print0 | xargs -0 --no-run-if-empty`:
+# --no-run-if-empty is a GNU extension, so the xargs form breaks the pre-commit
+# hook on macOS. This is POSIX and handles the empty case natively.
+actual=$(find flaime_demo -name '*.py' -exec cat {} + | wc -l)
 if [ "$actual" -gt "$budget" ]; then
   echo "LoC budget exceeded: $actual / $budget non-test source lines (see LOC_BUDGET)"
   exit 1
