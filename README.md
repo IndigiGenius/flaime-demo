@@ -39,15 +39,17 @@ and `26Q3-REPO-12`'s smoke test enforces it. Practically:
   uploads a model — the operator supplies the weights.
 - Streamlit telemetry is disabled in the container environment.
 
-> ⚠️ **Offline is a configuration property, not yet an enforced one.**
-> `flaime-serving`'s loader (`inference.py:246`) treats any non-absolute value
-> containing exactly one `/` as a HuggingFace Hub ID: it skips the local-file
-> check and lets `from_pretrained` **download at runtime**. So a routing-YAML
-> entry of `facebook/wav2vec2-base` fetches over the network, while
-> `./checkpoints/model.pt` does not. No UI path reaches this — only config does
-> — but until it is gated, "offline" depends on the routing YAML being written
-> correctly. `26Q3-REPO-12`'s offline smoke should assert that no configured
-> checkpoint is Hub-shaped; tracked as a `flaime-serving` follow-up.
+> ⚠️ **At the currently pinned `flaime-serving` rev, offline is a configuration
+> property rather than an enforced one.** That loader treats any non-absolute
+> value containing exactly one `/` as a HuggingFace Hub ID — it skips the
+> local-file check and lets `from_pretrained` download at runtime. So a
+> routing-YAML entry of `facebook/wav2vec2-base` would fetch over the network,
+> while `./checkpoints/model.pt` would not. No UI path reaches this; only config
+> does. `flaime-serving`'s `26Q3-SERVE-01` fixes it upstream — `load()` now
+> refuses Hub-shaped values unless `allow_remote=True` — and this repo inherits
+> the guarantee when its pin advances past that change. Until then, offline
+> depends on the routing YAML being written correctly, and `26Q3-REPO-12`'s
+> offline smoke should assert that no configured checkpoint is Hub-shaped.
 
 ## Development
 
@@ -62,29 +64,24 @@ reviewed change in the same PR as the code that needs it, never a silent drift.
 
 ## Licensing
 
-**Code** in this repository is Apache-2.0 (see `LICENSE` and `NOTICE`).
+The **code** in this repository is Apache-2.0 — see `LICENSE` and `NOTICE`.
 
-**Model weights are not.** No weights are committed here, but a checkpoint you
-load inherits the license of the foundation model it derives from — and most of
-those are non-commercial. Verified 2026-07-31:
+**No model weights are hosted, bundled, or distributed here.** This repository
+ships software that runs a model *you* supply: you train it or obtain it
+yourself, and how you use it is between you and whoever licensed it to you.
+Nothing here grants or restricts rights to any checkpoint.
 
-| Foundation model | License | Commercial use | ShareAlike |
-|---|---|---|---|
-| `facebook/wav2vec2-base`, `-base-960h` | Apache-2.0 | ✅ permitted | no |
-| `espnet/xeus` | CC-BY-NC-SA-4.0 | ❌ prohibited | **yes** |
-| `facebook/mms-1b-all` | CC-BY-NC-4.0 | ❌ prohibited | no |
+As a courtesy, the foundation models this code can load carry their own terms —
+verified against the upstream model cards on 2026-07-31:
 
-Two consequences worth stating plainly:
+| Foundation model | License |
+|---|---|
+| `facebook/wav2vec2-base`, `-base-960h` | Apache-2.0 |
+| `espnet/xeus` | CC-BY-NC-SA-4.0 |
+| `facebook/mms-1b-all` | CC-BY-NC-4.0 |
 
-- **XEUS-derived checkpoints are CC-BY-NC-SA-4.0.** FLAIME's primary encoder is
-  XEUS, so any checkpoint fine-tuned from it is a derivative work: it may not be
-  used commercially, it requires attribution, and ShareAlike means that if you
-  distribute it, you must distribute it under the same license.
-- **Apache-2.0 on this code does not relicense those weights.** Permissive code
-  plus a non-commercial checkpoint is still non-commercial in use.
+Two of the three are non-commercial, and XEUS's ShareAlike term extends to
+checkpoints fine-tuned from it. Apache-2.0 on this code does not alter those
+terms in either direction: it grants you the software, not the weights.
 
-If you need a commercially usable system, the wav2vec2 family is the only path
-available today — but this demo is built around XEUS-BTM checkpoints, so assume
-non-commercial unless you have deliberately configured otherwise.
-
-This table is a factual record of upstream terms, not legal advice.
+The upstream model card governs; this table is a pointer, not legal advice.
