@@ -48,3 +48,32 @@ bash scripts/check_loc_budget.sh
 
 `LOC_BUDGET` caps non-test source in `flaime_demo/`. Raising it is a deliberate,
 reviewed change in the same PR as the code that needs it, never a silent drift.
+
+## Licensing
+
+**Code** in this repository is Apache-2.0 (see `LICENSE` and `NOTICE`).
+
+**Model weights are not.** No weights are committed here, but a checkpoint you
+load inherits the license of the foundation model it derives from — and most of
+those are non-commercial. Verified 2026-07-31:
+
+| Foundation model | License | Commercial use | ShareAlike |
+|---|---|---|---|
+| `facebook/wav2vec2-base`, `-base-960h` | Apache-2.0 | ✅ permitted | no |
+| `espnet/xeus` | CC-BY-NC-SA-4.0 | ❌ prohibited | **yes** |
+| `facebook/mms-1b-all` | CC-BY-NC-4.0 | ❌ prohibited | no |
+
+Two consequences worth stating plainly:
+
+- **XEUS-derived checkpoints are CC-BY-NC-SA-4.0.** FLAIME's primary encoder is
+  XEUS, so any checkpoint fine-tuned from it is a derivative work: it may not be
+  used commercially, it requires attribution, and ShareAlike means that if you
+  distribute it, you must distribute it under the same license.
+- **Apache-2.0 on this code does not relicense those weights.** Permissive code
+  plus a non-commercial checkpoint is still non-commercial in use.
+
+If you need a commercially usable system, the wav2vec2 family is the only path
+available today — but this demo is built around XEUS-BTM checkpoints, so assume
+non-commercial unless you have deliberately configured otherwise.
+
+This table is a factual record of upstream terms, not legal advice.
