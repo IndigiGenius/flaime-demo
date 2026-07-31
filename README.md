@@ -43,7 +43,7 @@ and `26Q3-REPO-12`'s smoke test enforces it. Practically:
 ## Development
 
 ```bash
-uv sync                          # needs SSH access to IndigiGenius/flaime-serving
+uv sync
 uv run pytest
 bash scripts/check_loc_budget.sh
 ```

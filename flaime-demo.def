@@ -28,10 +28,9 @@ From: python:3.12-slim
     curl -fsSL https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
 
     cd /app
-    # flaime-serving is private and SSH-pinned, so the build host must supply
-    # credentials (mount an agent socket, or rewrite the URL first with
-    # scripts/ci/rewrite_serving_url.sh). No FLAIME extras here — flaime-demo
-    # has a single dependency graph, not FLAIME's optional-extra matrix.
+    # flaime-serving is public and pinned by rev, so the build needs no
+    # credentials. No FLAIME extras here — flaime-demo has a single dependency
+    # graph, not FLAIME's optional-extra matrix.
     uv sync --frozen --no-dev --no-editable
 
     # Drop git (build-time only); curl and audio libs are kept for runtime

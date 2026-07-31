@@ -20,10 +20,10 @@ dependencies = [
 
 [tool.uv.sources]
 # Pinned to an immutable rev, not a branch: the demo must build the same way
-# next month. Bumping the pin is a visible one-line diff. SSH for local dev;
-# CI rewrites this to HTTPS+token (scripts/ci/rewrite_serving_url.sh), the
-# same pattern FLAIME uses for PhoNet.
-flaime-serving = { git = "ssh://git@github.com/IndigiGenius/flaime-serving.git", rev = "db661917ae374c33c558ebc91ca676e7cfa91e38" }
+# next month. Bumping the pin is a visible one-line diff. Plain HTTPS — both
+# repos are public, so no credentials are needed anywhere (local, CI, or the
+# offline container build).
+flaime-serving = { git = "https://github.com/IndigiGenius/flaime-serving.git", rev = "db661917ae374c33c558ebc91ca676e7cfa91e38" }
 
 [dependency-groups]
 dev = [

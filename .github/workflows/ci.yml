@@ -2,8 +2,8 @@
 # (REPO-01): lint without deps, scope gate before the expensive job, single
 # test job with uv caching and a hard timeout.
 #
-# Difference from serving: no vendor tamper gate (nothing is vendored here),
-# and the test job needs a token to install the private flaime-serving pin.
+# Difference from serving: no vendor tamper gate (nothing is vendored here).
+# flaime-serving is public, so its pinned rev installs with no credentials.
 
 name: CI
 
@@ -64,10 +64,6 @@ jobs:
         with:
           version: "latest"
           enable-cache: true
-      - name: Rewrite flaime-serving URL for token auth
-        env:
-          FLAIME_SERVING_PAT: ${{ secrets.FLAIME_SERVING_PAT }}
-        run: bash scripts/ci/rewrite_serving_url.sh
       - name: Sync environment
         run: uv sync
       - name: Type check
