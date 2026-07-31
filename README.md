@@ -35,8 +35,19 @@ and `26Q3-REPO-12`'s smoke test enforces it. Practically:
 
 - Dependencies resolve from the committed `uv.lock` (`uv sync --frozen`).
 - `flaime-serving` is pinned to an immutable git rev, not a branch.
-- No model downloads at runtime; weights come from `CHECKPOINTS_DIR`.
+- Checkpoints are read from `CHECKPOINTS_DIR`. Nothing in the UI downloads or
+  uploads a model — the operator supplies the weights.
 - Streamlit telemetry is disabled in the container environment.
+
+> ⚠️ **Offline is a configuration property, not yet an enforced one.**
+> `flaime-serving`'s loader (`inference.py:246`) treats any non-absolute value
+> containing exactly one `/` as a HuggingFace Hub ID: it skips the local-file
+> check and lets `from_pretrained` **download at runtime**. So a routing-YAML
+> entry of `facebook/wav2vec2-base` fetches over the network, while
+> `./checkpoints/model.pt` does not. No UI path reaches this — only config does
+> — but until it is gated, "offline" depends on the routing YAML being written
+> correctly. `26Q3-REPO-12`'s offline smoke should assert that no configured
+> checkpoint is Hub-shaped; tracked as a `flaime-serving` follow-up.
 
 ## Development
 
