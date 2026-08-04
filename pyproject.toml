@@ -43,6 +43,15 @@ where = ["."]
 include = ["flaime_demo*"]
 exclude = ["tests*"]
 
+# Static assets are not .py, so setuptools drops them from the wheel unless they
+# are declared here. Without this the built wheel carries app.py but no logo, and
+# `st.image` raises MediaFileStorageError — but only in a non-editable install.
+# The container is exactly that case (`flaime-demo.def:40` runs
+# `uv sync --frozen --no-dev --no-editable`), so a local editable `uv sync` would
+# never reveal it. Added with the first asset, in 26Q3-REPO-09.
+[tool.setuptools.package-data]
+flaime_demo = ["images/*"]
+
 # Ruff / mypy settings mirror flaime-serving's (26Q3-REPO-01).
 [tool.ruff]
 line-length = 88

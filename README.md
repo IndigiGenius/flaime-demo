@@ -6,8 +6,8 @@ absent from this environment entirely.
 
 ## Status
 
-Scaffolded by `26Q3-REPO-08`. The UI itself (`app.py`) arrives in `26Q3-REPO-09`,
-routing configs in `26Q3-REPO-11`, and the offline end-to-end smoke in
+Scaffolded by `26Q3-REPO-08`. The UI (`app.py`) landed in `26Q3-REPO-09`;
+routing configs arrive in `26Q3-REPO-11`, and the offline end-to-end smoke in
 `26Q3-REPO-12` — the MVP finish line. Task cards, architecture decision, and
 scope guardrails live in the FLAIME repo:
 `docs/planning/tasks/26Q3-REPO/26Q3-REPO-00-overview.md`
