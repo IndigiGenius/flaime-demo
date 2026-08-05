@@ -1,0 +1,65 @@
+Bootstrap: docker
+From: python:3.12-slim
+
+%labels
+    org.opencontainers.image.title "FLAIME Demo"
+    org.opencontainers.image.description "FLAIME ASR demo — Streamlit UI with XEUS-BTM models"
+
+%files
+    # Build from repo root: apptainer build flaime-demo.sif flaime-demo.def
+    pyproject.toml /app/pyproject.toml
+    uv.lock /app/uv.lock
+    README.md /app/README.md
+    flaime_demo /app/flaime_demo
+    # NOTE: no `configs` entry — routing YAMLs arrive in 26Q3-REPO-11. Apptainer
+    # aborts the build on a missing %files source, so the line cannot be staged
+    # here ahead of the files. Add it back in REPO-11, in the same diff as the
+    # configs themselves.
+
+%post
+    # POSIX sh only: Apptainer runs %post under /bin/sh, which on
+    # python:3.12-slim is dash — `set -o pipefail` is a bash extension and
+    # aborts the build there.
+    set -eu
+    export DEBIAN_FRONTEND=noninteractive
+
+    # git: build-time only (cloning the pinned flaime-serving dependency)
+    # curl: installing uv
+    # libsndfile1, ffmpeg: runtime audio deps
+    apt-get update && apt-get install -y --no-install-recommends \
+        git curl libsndfile1 ffmpeg \
+    && rm -rf /var/lib/apt/lists/*
+
+    # Architecture-aware uv installer; writes binary to /usr/local/bin
+    curl -fsSL https://astral.sh/uv/install.sh | UV_INSTALL_DIR=/usr/local/bin sh
+
+    cd /app
+    # flaime-serving is public and pinned by rev, so the build needs no
+    # credentials. No FLAIME extras here — flaime-demo has a single dependency
+    # graph, not FLAIME's optional-extra matrix.
+    uv sync --frozen --no-dev --no-editable
+
+    # Drop git (build-time only); curl and audio libs are kept for runtime
+    apt-get purge -y git && apt-get autoremove -y && rm -rf /var/lib/apt/lists/*
+
+    # Non-root user (UID 1000 matches HF Spaces convention)
+    useradd -m -u 1000 -s /bin/bash flaime
+    chown -R flaime:flaime /app
+
+%environment
+    export PATH="/app/.venv/bin:$PATH"
+    export PYTHONDONTWRITEBYTECODE=1
+    export PYTHONUNBUFFERED=1
+    # HF / Transformers cache; --writable-tmpfs in run_demo.sh provides /tmp
+    export HF_HOME=/tmp/hf-cache
+    export TRANSFORMERS_CACHE=/tmp/hf-cache
+    # Belt-and-suspenders: also set in run_demo.sh via --env
+    export STREAMLIT_BROWSER_GATHER_USAGE_STATS=false
+    export FLAIME_TELEMETRY=off
+
+%runscript
+    # Port and address are supplied by run_demo.sh via $@ to avoid duplicate flags
+    exec streamlit run /app/flaime_demo/app.py \
+        --browser.gatherUsageStats false \
+        --server.headless true \
+        "$@"
