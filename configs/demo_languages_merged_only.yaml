@@ -1,0 +1,151 @@
+# Language routing configuration — merged checkpoint only.
+# All 64 BTM-03 XEUS training languages route through the merged checkpoint.
+# No expert_checkpoint entries; use this to baseline the merged model.
+
+merged_checkpoint:
+  path: "./checkpoints/26Q2-XEUS-BTM-03_xeus-tiny-ssl_64lang_merged-average_s2055460031.pt"
+  model_type: "xeus"
+  decoder: "ctc_greedy"
+
+languages:
+  # --- West / North Europe ---
+  hu:
+    display_name: "Hungarian"
+  es:
+    display_name: "Spanish"
+  fr:
+    display_name: "French"
+  de:
+    display_name: "German"
+  it:
+    display_name: "Italian"
+  pt:
+    display_name: "Portuguese"
+  nl:
+    display_name: "Dutch"
+  pl:
+    display_name: "Polish"
+  sv:
+    display_name: "Swedish"
+  da:
+    display_name: "Danish"
+  fi:
+    display_name: "Finnish"
+  is:
+    display_name: "Icelandic"
+  cy:
+    display_name: "Welsh"
+  eo:
+    display_name: "Esperanto"
+
+  # --- East / South Europe ---
+  ru:
+    display_name: "Russian"
+  uk:
+    display_name: "Ukrainian"
+  be:
+    display_name: "Belarusian"
+  bg:
+    display_name: "Bulgarian"
+  ro:
+    display_name: "Romanian"
+  cs:
+    display_name: "Czech"
+  sk:
+    display_name: "Slovak"
+  sl:
+    display_name: "Slovenian"
+  el:
+    display_name: "Greek"
+  ka:
+    display_name: "Georgian"
+
+  # --- Baltic ---
+  lt:
+    display_name: "Lithuanian"
+  lv:
+    display_name: "Latvian"
+  et:
+    display_name: "Estonian"
+
+  # --- Iberian minorities ---
+  ca:
+    display_name: "Catalan"
+  eu:
+    display_name: "Basque"
+  gl:
+    display_name: "Galician"
+
+  # --- Middle East / Central Asia ---
+  ar:
+    display_name: "Arabic"
+  fa:
+    display_name: "Persian"
+  tr:
+    display_name: "Turkish"
+  ur:
+    display_name: "Urdu"
+  ps:
+    display_name: "Pashto"
+  kk:
+    display_name: "Kazakh"
+  uz:
+    display_name: "Uzbek"
+  ug:
+    display_name: "Uyghur"
+
+  # --- South Asia ---
+  hi:
+    display_name: "Hindi"
+  bn:
+    display_name: "Bengali"
+  ta:
+    display_name: "Tamil"
+  si:
+    display_name: "Sinhala"
+
+  # --- East / Southeast Asia ---
+  ja:
+    display_name: "Japanese"
+  ko:
+    display_name: "Korean"
+  zh:
+    display_name: "Mandarin Chinese"
+  yue:
+    display_name: "Cantonese"
+  vi:
+    display_name: "Vietnamese"
+  id:
+    display_name: "Indonesian"
+  th:
+    display_name: "Thai"
+  bo:
+    display_name: "Tibetan"
+
+  # --- Africa ---
+  sw:
+    display_name: "Swahili"
+  am:
+    display_name: "Amharic"
+  yo:
+    display_name: "Yoruba"
+  kab:
+    display_name: "Kabyle"
+  lg:
+    display_name: "Luganda"
+  rw:
+    display_name: "Kinyarwanda"
+  af:
+    display_name: "Afrikaans"
+  zu:
+    display_name: "Zulu"
+  xh:
+    display_name: "Xhosa"
+  tn:
+    display_name: "Tswana"
+  nso:
+    display_name: "Northern Sotho"
+  st:
+    display_name: "Southern Sotho"
+  nbl:
+    display_name: "isiNdebele"

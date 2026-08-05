@@ -1,0 +1,190 @@
+# Language routing configuration for the FLAIME community demo (DEMO-03).
+#
+# Routing rules (applied in order for each request):
+#   1. expert  — use per-language expert checkpoint when `expert_checkpoint` is listed.
+#   2. merged  — fall back to `merged_checkpoint` when no `expert_checkpoint` is present.
+#   3. reject  — any language_code NOT present in `languages:` raises LanguageNotSupportedError
+#                (no silent fallback — community partners must see a clear message).
+#
+# How to add a language:
+#   - Add an entry under `languages:` with at minimum a `display_name`.
+#   - Set `expert_checkpoint` if a per-language expert checkpoint outperforms merged.
+#   - Omit `expert_checkpoint` to use the merged checkpoint for that language.
+#   - `model_type` and `decoder` override the merged_checkpoint defaults per-language.
+#
+# Checkpoint paths should be absolute (e.g. /data/checkpoints/model-v1) when possible.
+# Do NOT use bare relative paths like "checkpoints/model" — they contain exactly
+# one "/" and are misclassified as HuggingFace Hub IDs, bypassing the local
+# existence check in ASRInferenceEngine.load(). If you need a relative path,
+# prefix it with "./" (e.g. "./checkpoints/model") to avoid the heuristic.
+# TODO(DEMO-03): Replace placeholder paths with real checkpoint paths before July demo.
+
+merged_checkpoint:
+  # TODO(DEMO-03): Set to the actual merged BTM-16 checkpoint path produced by btm-merge-sweep.
+  path: "./checkpoints/26Q2-XEUS-BTM-03_xeus-tiny-ssl_64lang_merged-average_s2055460031.pt"
+  model_type: "xeus"
+  decoder: "ctc_greedy"
+
+languages:
+  # ---------------------------------------------------------------------------
+  # BTM-16 languages (from 16-lang experiment; experts beat merged on all).
+  # Included as fallback demonstration languages.
+  # ---------------------------------------------------------------------------
+  # DEMO-05 finding (2026-07-22): the en expert override pointed at
+  # "./checkpoints/test_serving", a placeholder that exists nowhere, so every
+  # English request failed with FileNotFoundError before reaching the model.
+  # Route en through merged like the other languages; restore an override here
+  # only when a real English expert checkpoint ships.
+  en:
+    display_name: "English"
+
+  hu:
+    display_name: "Hungarian"
+    expert_checkpoint: "./checkpoints/26Q2-XEUS-BTM-03_xeus-tiny-ssl_hung1274_expert_ep9_s2055460031.pt"
+    model_type: "xeus"
+    decoder: "ctc_greedy"
+
+  # ---------------------------------------------------------------------------
+  # BTM-03 64-language XEUS training set (all use merged checkpoint).
+  # Expert checkpoints not available; omit expert_checkpoint to route via merged.
+  # ---------------------------------------------------------------------------
+
+  # --- West / North Europe (CommonVoice) ---
+  es:
+    display_name: "Spanish"
+  fr:
+    display_name: "French"
+  de:
+    display_name: "German"
+  it:
+    display_name: "Italian"
+  pt:
+    display_name: "Portuguese"
+  nl:
+    display_name: "Dutch"
+  pl:
+    display_name: "Polish"
+  sv:
+    display_name: "Swedish"
+  da:
+    display_name: "Danish"
+  fi:
+    display_name: "Finnish"
+  is:
+    display_name: "Icelandic"
+  cy:
+    display_name: "Welsh"
+  eo:
+    display_name: "Esperanto"
+
+  # --- East / South Europe (CommonVoice) ---
+  ru:
+    display_name: "Russian"
+  uk:
+    display_name: "Ukrainian"
+  be:
+    display_name: "Belarusian"
+  bg:
+    display_name: "Bulgarian"
+  ro:
+    display_name: "Romanian"
+  cs:
+    display_name: "Czech"
+  sk:
+    display_name: "Slovak"
+  sl:
+    display_name: "Slovenian"
+  el:
+    display_name: "Greek"
+  ka:
+    display_name: "Georgian"
+
+  # --- Baltic (CommonVoice) ---
+  lt:
+    display_name: "Lithuanian"
+  lv:
+    display_name: "Latvian"
+  et:
+    display_name: "Estonian"
+
+  # --- Iberian minorities (CommonVoice) ---
+  ca:
+    display_name: "Catalan"
+  eu:
+    display_name: "Basque"
+  gl:
+    display_name: "Galician"
+
+  # --- Middle East / Central Asia ---
+  ar:
+    display_name: "Arabic"
+  fa:
+    display_name: "Persian"
+  tr:
+    display_name: "Turkish"
+  ur:
+    display_name: "Urdu"
+  ps:
+    display_name: "Pashto"
+  kk:
+    display_name: "Kazakh"
+  uz:
+    display_name: "Uzbek"
+  ug:
+    display_name: "Uyghur"
+
+  # --- South Asia ---
+  hi:
+    display_name: "Hindi"
+  bn:
+    display_name: "Bengali"
+  ta:
+    display_name: "Tamil"
+  si:
+    display_name: "Sinhala"
+
+  # --- East / Southeast Asia ---
+  ja:
+    display_name: "Japanese"
+  ko:
+    display_name: "Korean"
+  zh:
+    display_name: "Mandarin Chinese"
+  yue:
+    display_name: "Cantonese"
+  vi:
+    display_name: "Vietnamese"
+  id:
+    display_name: "Indonesian"
+  th:
+    display_name: "Thai"
+  bo:
+    display_name: "Tibetan"
+
+  # --- Africa ---
+  sw:
+    display_name: "Swahili"
+  am:
+    display_name: "Amharic"
+  yo:
+    display_name: "Yoruba"
+  kab:
+    display_name: "Kabyle"
+  lg:
+    display_name: "Luganda"
+  rw:
+    display_name: "Kinyarwanda"
+  af:
+    display_name: "Afrikaans"
+  zu:
+    display_name: "Zulu"
+  xh:
+    display_name: "Xhosa"
+  tn:
+    display_name: "Tswana"
+  nso:
+    display_name: "Northern Sotho"
+  st:
+    display_name: "Southern Sotho"
+  nbl:
+    display_name: "isiNdebele"

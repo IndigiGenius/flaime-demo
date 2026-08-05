@@ -1,0 +1,49 @@
+# Language routing configuration for the FLAIME community demo (DEMO-03).
+#
+# Routing rules (applied in order for each request):
+#   1. expert  — use per-language expert checkpoint when `expert_checkpoint` is listed.
+#   2. merged  — fall back to `merged_checkpoint` when no `expert_checkpoint` is present.
+#   3. reject  — any language_code NOT present in `languages:` raises LanguageNotSupportedError
+#                (no silent fallback — community partners must see a clear message).
+#
+# How to add a language:
+#   - Add an entry under `languages:` with at minimum a `display_name`.
+#   - Set `expert_checkpoint` if a per-language expert checkpoint outperforms merged.
+#   - Omit `expert_checkpoint` to use the merged checkpoint for that language.
+#   - `model_type` and `decoder` override the merged_checkpoint defaults per-language.
+#
+# Checkpoint paths should be absolute (e.g. /data/checkpoints/model-v1) when possible.
+# Do NOT use bare relative paths like "checkpoints/model" — they contain exactly
+# one "/" and are misclassified as HuggingFace Hub IDs, bypassing the local
+# existence check in ASRInferenceEngine.load(). If you need a relative path,
+# prefix it with "./" (e.g. "./checkpoints/model") to avoid the heuristic.
+# TODO(DEMO-03): Replace placeholder paths with real checkpoint paths before July demo.
+
+merged_checkpoint:
+  # TODO(DEMO-03): Set to the actual merged BTM-16 checkpoint path produced by btm-merge-sweep.
+  path: "./checkpoints/btm-16lang-merged-v1"
+  model_type: "xeus"
+  decoder: "ctc_greedy"
+
+languages:
+  # ---------------------------------------------------------------------------
+  # BTM-16 languages (from 16-lang experiment; experts beat merged on all).
+  # Included as fallback demonstration languages.
+  # ---------------------------------------------------------------------------
+  en:
+    display_name: "English"
+    expert_checkpoint: "./checkpoints/test_serving"
+    model_type: "wav2vec2"
+    decoder: "ctc_greedy"
+
+  es:
+    display_name: "Spanish"
+    expert_checkpoint: "./checkpoints/test_serving"
+    model_type: "wav2vec2"
+    decoder: "ctc_greedy"
+
+  fr:
+    display_name: "French"
+    expert_checkpoint: "./checkpoints/test_serving"
+    model_type: "wav2vec2"
+    decoder: "ctc_greedy"
