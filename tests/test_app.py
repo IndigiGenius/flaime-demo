@@ -351,7 +351,7 @@ class TestAudioSovereignty:
         def guarded_open(
             file: object, mode: str = "r", *args: object, **kwargs: object
         ) -> object:
-            if any(m in mode for m in ("w", "x", "a")):
+            if any(m in mode for m in ("w", "x", "a", "+")):
                 write_calls.append(file)
             return real_open(file, mode, *args, **kwargs)  # type: ignore[call-overload]
 
