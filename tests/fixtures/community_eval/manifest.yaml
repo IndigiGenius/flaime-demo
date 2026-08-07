@@ -1,0 +1,60 @@
+# Synthetic community-eval fixture manifest — spike for 26Q3-REPO-12 Part 2.
+#
+# NOT the real community-representative sample set described in FLAIME's
+# 26Q1-DEMO-05 (still NOT STARTED upstream: no CLI wiring, no real manifest,
+# no writeup). This is a mock: 6 short English clips synthesized locally with
+# espeak-ng (MIT-licensed, offline TTS — no real speaker, no contributor
+# audio), used to unblock run_community_eval.py's move/port without waiting
+# on real Common Voice / community sample curation.
+#
+# Because these clips are synthetic (nobody's voice, nobody's recording),
+# they carry none of the data-sovereignty constraints that keep real
+# community audio out of git — so unlike the eventual real manifest, this
+# fixture's audio is committed directly alongside it (see audio/*.wav).
+#
+# Regenerate with: tests/fixtures/community_eval/generate.sh
+#
+# Schema matches Sample in scripts/run_community_eval.py:
+#   audio_path      — relative to this manifest's directory (see samples_root
+#                      in the loader test / eval script invocation)
+#   language        — BCP-47 code
+#   reference_text  — exact text passed to espeak-ng, lowercase, no punctuation
+#   category        — golden (clean) | edge (numbers/names — harder to decode)
+#   licensing_note  — provenance; mandatory per Sample's schema
+
+samples:
+  - audio_path: audio/golden_001.wav
+    language: en
+    reference_text: hello world this is a test
+    category: golden
+    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+
+  - audio_path: audio/golden_002.wav
+    language: en
+    reference_text: the quick brown fox jumps over the lazy dog
+    category: golden
+    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+
+  - audio_path: audio/golden_003.wav
+    language: en
+    reference_text: please transcribe this audio clip accurately
+    category: golden
+    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+
+  - audio_path: audio/golden_004.wav
+    language: en
+    reference_text: the weather today is sunny with a light breeze
+    category: golden
+    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+
+  - audio_path: audio/edge_001.wav
+    language: en
+    reference_text: call me at five five five one two three four
+    category: edge
+    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+
+  - audio_path: audio/edge_002.wav
+    language: en
+    reference_text: my name is jordan and i live in ottawa
+    category: edge
+    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
