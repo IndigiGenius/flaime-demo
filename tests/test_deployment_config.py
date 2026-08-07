@@ -187,9 +187,17 @@ class TestDemoSh:
     def test_passes_languages_config_env(self) -> None:
         assert "DEMO_LANGUAGES_CONFIG" in DEMO_SH.read_text()
 
-    def test_default_languages_config_path(self) -> None:
-        """Default DEMO_LANGUAGES_CONFIG must point to the in-container YAML."""
-        assert "/app/configs/demo_languages.yaml" in DEMO_SH.read_text()
+    def test_languages_config_not_defaulted(self) -> None:
+        """DEMO_LANGUAGES_CONFIG (Mode B) must never be defaulted.
+
+        A baked-in fallback would silently force router mode even when the
+        operator configured Mode A (DEMO_CHECKPOINT_FILE) and left Mode B
+        unset — overriding their choice with no way to opt out. It must only
+        be forwarded into the container when the operator actually set it.
+        """
+        content = DEMO_SH.read_text()
+        assert "DEMO_LANGUAGES_CONFIG:-/app" not in content
+        assert 'if [[ -n "${DEMO_LANGUAGES_CONFIG:-}" ]]' in content
 
     def test_gpu_nv_flag(self) -> None:
         content = DEMO_SH.read_text()
