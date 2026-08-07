@@ -110,10 +110,17 @@ apptainer_run_args=(
     --writable-tmpfs
     --env FLAIME_TELEMETRY=off
     --env "DEMO_CHECKPOINT=${DEMO_CHECKPOINT:-}"
-    --env "DEMO_LANGUAGES_CONFIG=${DEMO_LANGUAGES_CONFIG:-/app/configs/demo_languages.yaml}"
     --env "DEMO_MODEL_TYPE=${DEMO_MODEL_TYPE:-xeus}"
     --env "DEMO_DECODER=${DEMO_DECODER:-ctc_greedy}"
 )
+
+# DEMO_LANGUAGES_CONFIG (Mode B) overrides DEMO_CHECKPOINT (Mode A) per the .env
+# contract, so it must only be forwarded when the operator actually set it —
+# never defaulted. A default here would silently force router mode even when
+# DEMO_CHECKPOINT_FILE/.env selected single-checkpoint mode.
+if [[ -n "${DEMO_LANGUAGES_CONFIG:-}" ]]; then
+    apptainer_run_args+=(--env "DEMO_LANGUAGES_CONFIG=${DEMO_LANGUAGES_CONFIG}")
+fi
 
 if command -v nvidia-smi &>/dev/null; then
     apptainer_run_args=(--nv "${apptainer_run_args[@]}")
