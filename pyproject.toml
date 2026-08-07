@@ -18,6 +18,10 @@ dependencies = [
     # arrives transitively via flaime-serving; relying on that would be a
     # latent break the first time serving drops it.
     "numpy>=1.24",
+    # scripts/metrics.py (compute_wer/compute_cer, ported from FLAIME's
+    # flaime.utils.training_utils for scripts/run_community_eval.py). Pin
+    # matches FLAIME's own jiwer pin.
+    "jiwer>=3.0.0",
 ]
 
 [tool.uv.sources]
@@ -91,6 +95,11 @@ python_files = "test_*.py"
 python_classes = "Test*"
 python_functions = "test_*"
 addopts = "-v --tb=short"
+# Repo root on sys.path so `scripts` (an explicit package, see
+# scripts/__init__.py) is importable as `scripts.run_community_eval` etc. —
+# without this, `uv run pytest` cannot resolve it (no editable install covers
+# scripts/, only flaime_demo/).
+pythonpath = ["."]
 
 [tool.mypy]
 python_version = "3.12"
