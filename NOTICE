@@ -14,6 +14,22 @@ standalone reimplementation of the XEUS encoder architecture written against
 ESPnet's XEUS SSL model; see that repository's NOTICE for the attribution.
 
 --------------------------------------------------------------------------------
+Test fixture data
+--------------------------------------------------------------------------------
+
+tests/fixtures/community_eval/audio/ contains 8 short excerpts from the
+LibriSpeech test-clean corpus, licensed CC BY 4.0:
+
+  V. Panayotov, G. Chen, D. Povey and S. Khudanpur, "Librispeech: An ASR
+  corpus based on public domain audiobooks," 2015 IEEE International
+  Conference on Acoustics, Speech and Signal Processing (ICASSP), 2015,
+  pp. 5206-5210. https://www.openslr.org/12/
+
+No modification beyond resampling to 16kHz mono PCM. See
+tests/fixtures/community_eval/manifest.yaml for the per-utterance source IDs
+and tests/fixtures/community_eval/fetch_librispeech_samples.sh to regenerate.
+
+--------------------------------------------------------------------------------
 Model weights are not covered by this license
 --------------------------------------------------------------------------------
 

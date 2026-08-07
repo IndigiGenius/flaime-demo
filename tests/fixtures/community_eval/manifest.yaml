@@ -1,60 +1,100 @@
-# Synthetic community-eval fixture manifest — spike for 26Q3-REPO-12 Part 2.
+# Community-eval fixture manifest — real LibriSpeech test-clean excerpt
+# (26Q3-REPO-12 Part 2).
 #
 # NOT the real community-representative sample set described in FLAIME's
 # 26Q1-DEMO-05 (still NOT STARTED upstream: no CLI wiring, no real manifest,
-# no writeup). This is a mock: 6 short English clips synthesized locally with
-# espeak-ng (MIT-licensed, offline TTS — no real speaker, no contributor
-# audio), used to unblock run_community_eval.py's move/port without waiting
-# on real Common Voice / community sample curation.
+# no writeup). This fixture exercises scripts/run_community_eval.py against
+# real speech without touching any data-sovereignty-sensitive community
+# audio: all 8 clips are excerpted from LibriSpeech test-clean, a public
+# corpus of read English audiobooks, licensed CC BY 4.0.
 #
-# Because these clips are synthetic (nobody's voice, nobody's recording),
-# they carry none of the data-sovereignty constraints that keep real
-# community audio out of git — so unlike the eventual real manifest, this
-# fixture's audio is committed directly alongside it (see audio/*.wav).
+# Citation: V. Panayotov, G. Chen, D. Povey and S. Khudanpur, "Librispeech:
+# An ASR corpus based on public domain audiobooks," ICASSP 2015.
+# https://www.openslr.org/12/
 #
-# Regenerate with: tests/fixtures/community_eval/generate.sh
+# Regenerate with: tests/fixtures/community_eval/fetch_librispeech_samples.sh
 #
 # Schema matches Sample in scripts/run_community_eval.py:
-#   audio_path      — relative to this manifest's directory (see samples_root
-#                      in the loader test / eval script invocation)
+#   audio_path      — relative to this manifest's directory
 #   language        — BCP-47 code
-#   reference_text  — exact text passed to espeak-ng, lowercase, no punctuation
-#   category        — golden (clean) | edge (numbers/names — harder to decode)
+#   reference_text  — LibriSpeech ground-truth transcript, lowercased (no
+#                      other normalization — matches upstream punctuation-free
+#                      transcription convention)
+#   category        — golden (plain narration) | edge (proper nouns — harder
+#                      to decode than common vocabulary)
 #   licensing_note  — provenance; mandatory per Sample's schema
+#
+# Filename -> source LibriSpeech utterance ID (speaker-chapter-utterance):
+#   golden_001.wav  6930-75918-0000
+#   golden_002.wav  6930-75918-0002
+#   golden_003.wav  6930-75918-0007
+#   golden_004.wav  6930-75918-0010
+#   golden_005.wav  6930-76324-0001
+#   edge_001.wav    6930-75918-0008
+#   edge_002.wav    6930-76324-0000
+#   edge_003.wav    6930-76324-0007
 
 samples:
   - audio_path: audio/golden_001.wav
     language: en
-    reference_text: hello world this is a test
+    reference_text: concord returned to its place amidst the tents
     category: golden
-    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-75918-0000
 
   - audio_path: audio/golden_002.wav
     language: en
-    reference_text: the quick brown fox jumps over the lazy dog
+    reference_text: congratulations were poured in upon the princess everywhere during her journey
     category: golden
-    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-75918-0002
 
   - audio_path: audio/golden_003.wav
     language: en
-    reference_text: please transcribe this audio clip accurately
+    reference_text: you will be frank with me i always am
     category: golden
-    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-75918-0007
 
   - audio_path: audio/golden_004.wav
     language: en
-    reference_text: the weather today is sunny with a light breeze
+    reference_text: i can perceive love clearly enough
     category: golden
-    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-75918-0010
+
+  - audio_path: audio/golden_005.wav
+    language: en
+    reference_text: they were certainly no nearer the solution of their problem
+    category: golden
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-76324-0001
 
   - audio_path: audio/edge_001.wav
     language: en
-    reference_text: call me at five five five one two three four
+    reference_text: can you imagine why buckingham has been so violent i suspect
     category: edge
-    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-75918-0008
 
   - audio_path: audio/edge_002.wav
     language: en
-    reference_text: my name is jordan and i live in ottawa
+    reference_text: goliath makes another discovery
     category: edge
-    licensing_note: synthetic (espeak-ng, MIT-licensed TTS, no real speaker)
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-76324-0000
+
+  - audio_path: audio/edge_003.wav
+    language: en
+    reference_text: now what have you to say cynthia sprague
+    category: edge
+    licensing_note: >-
+      CC BY 4.0; Panayotov et al. (2015), LibriSpeech test-clean
+      (openslr.org/12), utterance 6930-76324-0007
