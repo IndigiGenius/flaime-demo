@@ -157,5 +157,7 @@ class TestEnvExample:
                 value = line.split("=", 1)[1].strip()
                 if any(p in value for p in ("/path/to/your", "example", "change-me")):
                     return
-                pytest.fail(f"CHECKPOINTS_DIR in .env.example should be a placeholder, got: {value!r}")
+                pytest.fail(
+                    f"CHECKPOINTS_DIR in .env.example should be a placeholder, got: {value!r}"
+                )
         pytest.fail("CHECKPOINTS_DIR not found in .env.example")
