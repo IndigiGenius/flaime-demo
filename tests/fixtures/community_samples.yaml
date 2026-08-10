@@ -1,0 +1,112 @@
+# DEMO-05 community-representative evaluation manifest.
+#
+# Ported verbatim from FLAIME's tests/demo/community_samples.yaml (landed
+# upstream in 8b28a4b, "26Q1-DEMO-05 (Part 2): serving wiring + CLI + manifest
+# + writeup") — the real production manifest for scripts/run_community_eval.py's
+# --manifest flag, distinct from tests/fixtures/community_eval/manifest.yaml
+# (this repo's own CI-committed real-audio fixture, used where evaluate_samples
+# needs actual audio bytes to run against in tests). All 10 language codes used
+# here are present in this repo's configs/demo_languages.yaml.
+#
+# Sovereignty rules (non-negotiable — see the task def):
+#   - NO contributor audio bytes are committed to this repo. `audio_path` is
+#     relative to a documented external samples root passed via --samples-root
+#     (a cluster path or partner-licensed bucket).
+#   - Every sample MUST carry a `licensing_note`; load_manifest() fails fast on
+#     a missing one. Use CV-CC0 for Common Voice CC0 clips, "synthesized" for
+#     TTS, or "contributor-recorded (consent on file)" for consented audio.
+#   - No NEW partner recordings are sourced for this test (task def: evaluation,
+#     not collection). All 15 clips are currently synthesized (espeak-ng TTS,
+#     produced to match reference_text); swapping golden/transfer to real
+#     CV-CC0 clips is a fidelity upgrade — update licensing_note if you do.
+#
+# Categories:
+#   golden   — well-supported demo languages (expert or merged checkpoint)
+#   transfer — lower-resource demo languages served by the merged checkpoint only
+#   edge     — codeswitch / noise / numbers / accent variants (the partner-felt
+#              failure modes); WER here matters more than the golden aggregate.
+#
+# All language codes below are present in configs/demo_languages.yaml,
+# so every sample routes through the production LanguageRouter.
+
+samples:
+  # --- golden: 5 well-supported demo languages -----------------------------
+  - audio_path: golden/en_common_voice_0001.wav
+    language: en
+    reference_text: the quick brown fox jumps over the lazy dog
+    category: golden
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: golden/es_common_voice_0001.wav
+    language: es
+    reference_text: el rápido zorro marrón salta sobre el perro perezoso
+    category: golden
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: golden/fr_common_voice_0001.wav
+    language: fr
+    reference_text: le renard brun rapide saute par-dessus le chien paresseux
+    category: golden
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: golden/de_common_voice_0001.wav
+    language: de
+    reference_text: der schnelle braune fuchs springt über den faulen hund
+    category: golden
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: golden/it_common_voice_0001.wav
+    language: it
+    reference_text: la rapida volpe marrone salta sopra il cane pigro
+    category: golden
+    licensing_note: synthesized (espeak-ng TTS)
+
+  # --- transfer: 5 lower-resource demo languages (merged checkpoint) -------
+  - audio_path: transfer/cy_common_voice_0001.wav
+    language: cy
+    reference_text: mae'r llwynog brown cyflym yn neidio dros y ci diog
+    category: transfer
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: transfer/is_common_voice_0001.wav
+    language: is
+    reference_text: skjóti brúni refurinn stekkur yfir lata hundinn
+    category: transfer
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: transfer/fi_common_voice_0001.wav
+    language: fi
+    reference_text: nopea ruskea kettu hyppää laiskan koiran yli
+    category: transfer
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: transfer/da_common_voice_0001.wav
+    language: da
+    reference_text: den hurtige brune ræv hopper over den dovne hund
+    category: transfer
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: transfer/sv_common_voice_0001.wav
+    language: sv
+    reference_text: den snabba bruna räven hoppar över den lata hunden
+    category: transfer
+    licensing_note: synthesized (espeak-ng TTS)
+
+  # --- edge: 5 partner-felt failure modes ----------------------------------
+  - audio_path: edge/en_codeswitch_0001.wav
+    language: en
+    reference_text: let's meet at the plaza después de la reunión
+    category: edge
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: edge/en_noisy_cafe_0001.wav
+    language: en
+    reference_text: can you send me the report by friday afternoon
+    category: edge
+    licensing_note: synthesized (espeak-ng TTS) + synthetic café-noise overlay
+  - audio_path: edge/en_numbers_dates_0001.wav
+    language: en
+    reference_text: the meeting is on march third at four fifteen p m
+    category: edge
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: edge/es_accented_0001.wav
+    language: es
+    reference_text: muchas gracias por venir a la presentación de hoy
+    category: edge
+    licensing_note: synthesized (espeak-ng TTS)
+  - audio_path: edge/de_placenames_0001.wav
+    language: de
+    reference_text: der zug nach garmisch partenkirchen fährt um neun uhr
+    category: edge
+    licensing_note: synthesized (espeak-ng TTS)
