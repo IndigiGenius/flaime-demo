@@ -380,8 +380,8 @@ def render_report(
         conf = "—" if r.confidence is None else f"{r.confidence:.2f}"
         hyp = (r.hypothesis[:60] + "…") if len(r.hypothesis) > 60 else r.hypothesis
         lines.append(
-            f"| {r.audio_path} | {r.language} | {r.category} | {status} "
-            f"| {r.wer:.1f} | {r.cer:.1f} | {r.latency_ms:.0f} | {conf} | {hyp} |"
+            f"| {r.audio_path.replace('|', '\\|').replace('\n', ' ')} | {r.language.replace('|', '\\|').replace('\n', ' ')} | {r.category.replace('|', '\\|').replace('\n', ' ')} | {status} "
+            f"| {r.wer:.1f} | {r.cer:.1f} | {r.latency_ms:.0f} | {conf} | {hyp.replace('|', '\\|').replace('\n', ' ')} |"
         )
 
     # --- Failures (why, not just that) -----------------------------------------
