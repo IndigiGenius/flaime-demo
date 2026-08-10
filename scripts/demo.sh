@@ -63,10 +63,10 @@ usage() {
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --rebuild)     REBUILD=1;              shift   ;;
-        --sif)         SIF="$2";               shift 2 ;;
-        --checkpoints) CHECKPOINTS="$2";       shift 2 ;;
-        --port)        PORT="$2";              shift 2 ;;
-        --bind)        BIND_ADDR="$2";         shift 2 ;;
+        --sif)         : "${2:?Error: --sif requires a path}"; SIF="$2";               shift 2 ;;
+        --checkpoints) : "${2:?Error: --checkpoints requires a directory}"; CHECKPOINTS="$2";       shift 2 ;;
+        --port)        : "${2:?Error: --port requires a value}"; PORT="$2";              shift 2 ;;
+        --bind)        : "${2:?Error: --bind requires an address}"; BIND_ADDR="$2";         shift 2 ;;
         -h|--help)     usage; exit 0          ;;
         *) echo "Error: unknown option '$1'" >&2; exit 1 ;;
     esac
