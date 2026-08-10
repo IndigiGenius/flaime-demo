@@ -38,6 +38,11 @@ dev = [
     "mypy>=1.17",
     "ruff>=0.12",
     "pre-commit>=3.7",
+    # TestSafeRunTranscription's stub models (tests/test_error_handling.py,
+    # reunited from FLAIME in 26Q3-REPO-10) build torch.Tensor logits directly.
+    # Pin matches flaime-serving's, which carries it transitively — declared
+    # explicitly so that pin isn't a silent, undeclared dependency.
+    "torch>=2.8.0,<2.9",
 ]
 
 [build-system]
