@@ -93,7 +93,7 @@ echo "==> Checkpoints: ${CHECKPOINTS}"
 # mounted read-only at /checkpoints, so only the filename differs between host and
 # container — the operator states the directory and filename once each, never the
 # full path twice. An explicit DEMO_CHECKPOINT (full container path) takes priority.
-if [[ -n "${DEMO_CHECKPOINT_FILE:-}" && -z "${DEMO_CHECKPOINT:-}" ]]; then
+if [[ -z "${DEMO_LANGUAGES_CONFIG:-}" && -n "${DEMO_CHECKPOINT_FILE:-}" && -z "${DEMO_CHECKPOINT:-}" ]]; then
     if [[ ! -e "${CHECKPOINTS}/${DEMO_CHECKPOINT_FILE}" ]]; then
         echo "Error: checkpoint not found: ${CHECKPOINTS}/${DEMO_CHECKPOINT_FILE}" >&2
         echo "  Set DEMO_CHECKPOINT_FILE in .env to a file inside CHECKPOINTS_DIR." >&2
