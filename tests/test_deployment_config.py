@@ -288,8 +288,12 @@ class TestEnvExample:
 
     def test_no_secrets_committed(self) -> None:
         content = ENV_EXAMPLE.read_text()
-        for _placeholder in ("/path/to/your", "example", "change-me"):
-            if "CHECKPOINTS_DIR" in content:
-                return  # placeholder values present, not real secrets
-        # If the file has actual paths, that's a problem — but hard to test
-        # generically; rely on .gitignore for the real .env
+        for line in content.splitlines():
+            if line.startswith("CHECKPOINTS_DIR="):
+                value = line.split("=", 1)[1].strip()
+                if any(p in value for p in ("/path/to/your", "example", "change-me")):
+                    return
+                pytest.fail(
+                    f"CHECKPOINTS_DIR in .env.example should be a placeholder, got: {value!r}"
+                )
+        pytest.fail("CHECKPOINTS_DIR not found in .env.example")
