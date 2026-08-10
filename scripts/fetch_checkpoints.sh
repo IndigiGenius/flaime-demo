@@ -68,9 +68,9 @@ USAGE
 # ── argument parsing ──────────────────────────────────────────────────────────
 while [[ $# -gt 0 ]]; do
     case "$1" in
-        --source)   SOURCE="$2";            shift 2 ;;
-        --dest)     DEST_DIR="$2";          shift 2 ;;
-        --checksum) EXPECTED_CHECKSUM="$2"; shift 2 ;;
+        --source)   : "${2:?Error: --source requires a value}"; SOURCE="$2";            shift 2 ;;
+        --dest)     : "${2:?Error: --dest requires a directory}"; DEST_DIR="$2";          shift 2 ;;
+        --checksum) : "${2:?Error: --checksum requires a sha256 hex string}"; EXPECTED_CHECKSUM="$2"; shift 2 ;;
         --force)    FORCE=1;                shift   ;;
         -h|--help)  usage; exit 0          ;;
         *) echo "Error: unknown option '$1'" >&2; usage; exit 1 ;;
