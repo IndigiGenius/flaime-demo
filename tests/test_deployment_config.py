@@ -4,13 +4,15 @@ Validates deployment artifacts without requiring a running container daemon or
 network access.
 
 Moved from FLAIME `tests/demo/test_deployment_config.py` (26Q3-REPO-10). Two
-classes did NOT come along at that time:
+classes didn't come along at that time and were backfilled by later cards:
 
-- `TestDemoSh` (22 tests) — validates `scripts/demo.sh`, which did not exist
-  in this repo yet. It arrives now, in 26Q3-REPO-12, alongside the script.
-- `TestReadme`'s apptainer/bare-metal assertions — this repo's README.md
-  (written fresh in 26Q3-REPO-08) doesn't document either mode yet; that
-  content arrives with the docs move in 26Q3-REPO-13.
+- `TestDemoSh` (22 tests) — validates `scripts/demo.sh`; landed in 26Q3-REPO-12
+  alongside the script.
+- `TestReadme` — landed in 26Q3-REPO-13 alongside the docs move. Its
+  `test_documents_bare_metal_mode` assertion targets the real bare-metal launch
+  command (`uv run python flaime_demo/app.py`), not FLAIME's old
+  `uv run flaime serve ui` — a real behavior difference between the in-repo and
+  extracted layouts, not a path rewrite.
 
 `test_excludes_phonet_from_build` was replaced with `test_no_phonet_dependency`:
 the original asserted a FLAIME-specific `uv sync --no-install-package phonet`
@@ -34,6 +36,7 @@ import pytest
 APPTAINER_DEF: Path
 DEMO_SH: Path
 ENV_EXAMPLE: Path
+README: Path
 
 
 @pytest.fixture(scope="module", autouse=True)
@@ -43,10 +46,11 @@ def _resolve_paths(repo_root: Path) -> None:
     A single fixture, not per-test edits — see conftest.py's `repo_root` for
     why `pytestconfig.rootpath` and never `Path(__file__).parents[N]`.
     """
-    global APPTAINER_DEF, DEMO_SH, ENV_EXAMPLE
+    global APPTAINER_DEF, DEMO_SH, ENV_EXAMPLE, README
     APPTAINER_DEF = repo_root / "flaime-demo.def"
     DEMO_SH = repo_root / "scripts" / "demo.sh"
     ENV_EXAMPLE = repo_root / ".env.example"
+    README = repo_root / "README.md"
 
 
 def _parse_def_sections(content: str) -> dict[str, str]:
@@ -297,3 +301,26 @@ class TestEnvExample:
                     f"CHECKPOINTS_DIR in .env.example should be a placeholder, got: {value!r}"
                 )
         pytest.fail("CHECKPOINTS_DIR not found in .env.example")
+
+
+# ── README.md ────────────────────────────────────────────────────────────────
+
+
+class TestReadme:
+    def test_exists(self) -> None:
+        assert README.exists()
+
+    def test_documents_apptainer_mode(self) -> None:
+        assert "apptainer" in README.read_text().lower()
+
+    def test_documents_bare_metal_mode(self) -> None:
+        """Ported from FLAIME's original assertion, which targeted the old
+        `uv run flaime serve ui` command. flaime-demo's app is self-bootstrapping
+        (see flaime_demo/app.py's __main__ block) — there is no `flaime` CLI or
+        `serve ui` subcommand here, so the real invariant is the actual launch
+        command this repo's README documents."""
+        assert "uv run python flaime_demo/app.py" in README.read_text()
+
+    def test_documents_languages_config(self) -> None:
+        content = README.read_text()
+        assert "demo_languages" in content or "DEMO_LANGUAGES_CONFIG" in content
