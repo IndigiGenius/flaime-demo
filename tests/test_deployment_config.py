@@ -350,7 +350,10 @@ class TestDemoShBareMetal:
 
         bin_dir = tmp_path / "bin"
         bin_dir.mkdir()
-        for tool, log_var in (("uv", "UV_CALL_LOG"), ("apptainer", "APPTAINER_CALL_LOG")):
+        for tool, log_var in (
+            ("uv", "UV_CALL_LOG"),
+            ("apptainer", "APPTAINER_CALL_LOG"),
+        ):
             fake = bin_dir / tool
             fake.write_text(f'#!/usr/bin/env bash\necho "$*" >> "${{{log_var}}}"\n')
             fake.chmod(0o755)

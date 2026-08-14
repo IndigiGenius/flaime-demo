@@ -20,6 +20,28 @@ cards PR [FLAIME#609](https://github.com/IndigiGenius/FLAIME/pull/609)).
 
 ---
 
+## Quickstart (dev laptop)
+
+```bash
+git clone git@github.com:IndigiGenius/flaime-demo.git && cd flaime-demo
+./scripts/fetch_checkpoints.sh --dest ./checkpoints   # first run only: stage checkpoints
+./scripts/demo.sh                                     # sets up if needed, then launches
+```
+
+Two commands (three on first run, for checkpoint staging). `demo.sh` is
+self-bootstrapping: it creates `.env` from `.env.example`, runs `uv sync` only when
+the venv is missing or `uv.lock` is newer than it (so a warm re-run makes zero
+network calls), and launches `flaime_demo/app.py` directly — no Apptainer install
+required. If `CHECKPOINTS_DIR` isn't set yet, it prints the exact
+`fetch_checkpoints.sh` command above instead of guessing.
+
+This is [Mode 2](#mode-2--bare-metal-uv-run-python-flaime_demoapppy) below, driven
+automatically. Partner laptops with a prebuilt `.sif` and no repo access keep using
+[Mode 1](#mode-1--apptainer-linux--slurm) — `demo.sh` detects the `.sif` and switches
+to the Apptainer path unchanged.
+
+---
+
 ## Prerequisites
 
 | Mode | Requires |
@@ -135,6 +157,11 @@ model cache without writing to the host filesystem.
 ---
 
 ## Mode 2 — Bare metal (`uv run python flaime_demo/app.py`)
+
+`./scripts/demo.sh` drives this mode automatically (see Quickstart above) whenever
+no `flaime-demo.sif` is present — `uv sync` (if needed) then a launch, reading the
+same `.env` contract as Mode 1. The commands below are the manual, one-step-at-a-time
+equivalent — useful for passing ad hoc flags or debugging a launch failure.
 
 ```bash
 # Install deps (single dependency graph — no extras group here, unlike FLAIME's
