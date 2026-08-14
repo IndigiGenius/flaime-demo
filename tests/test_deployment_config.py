@@ -29,6 +29,7 @@ import os
 import shutil
 import stat
 import subprocess
+import time
 from pathlib import Path
 
 import pytest
@@ -326,6 +327,90 @@ class TestDemoShBootstrap:
         (sandbox / "fake.sif").touch()
         self._run(sandbox, env)
         assert not (sandbox / "checkpoints").exists()
+
+
+class TestDemoShBareMetal:
+    """Mode dispatch (bare-metal default vs. Apptainer) and the uv sync gate.
+
+    `uv` and `apptainer` are shimmed on PATH to record their invocations
+    instead of actually building/running anything, so these tests are fast
+    and don't require either tool installed.
+    """
+
+    @pytest.fixture
+    def sandbox(self, tmp_path: Path) -> Path:
+        scripts_dir = tmp_path / "scripts"
+        scripts_dir.mkdir()
+        sandboxed_sh = scripts_dir / "demo.sh"
+        sandboxed_sh.write_bytes(DEMO_SH.read_bytes())
+        sandboxed_sh.chmod(DEMO_SH.stat().st_mode)
+        (tmp_path / ".env.example").write_bytes(ENV_EXAMPLE.read_bytes())
+        (tmp_path / "checkpoints").mkdir()
+        (tmp_path / "uv.lock").write_text("")
+
+        bin_dir = tmp_path / "bin"
+        bin_dir.mkdir()
+        for tool, log_var in (("uv", "UV_CALL_LOG"), ("apptainer", "APPTAINER_CALL_LOG")):
+            fake = bin_dir / tool
+            fake.write_text(f'#!/usr/bin/env bash\necho "$*" >> "${{{log_var}}}"\n')
+            fake.chmod(0o755)
+        return tmp_path
+
+    def _env(self, sandbox: Path) -> dict[str, str]:
+        env = dict(os.environ.items())
+        env["PATH"] = f"{sandbox / 'bin'}:{env['PATH']}"
+        env["CHECKPOINTS_DIR"] = str(sandbox / "checkpoints")
+        # Blank out (not unset) so the auto-created .env's placeholder
+        # DEMO_CHECKPOINT_FILE=your-merged-checkpoint.pt — which no fixture
+        # checkpoints dir satisfies — doesn't trip the unrelated
+        # checkpoint-file-resolution check these tests aren't exercising.
+        env["DEMO_CHECKPOINT_FILE"] = ""
+        env["UV_CALL_LOG"] = str(sandbox / "uv.log")
+        env["APPTAINER_CALL_LOG"] = str(sandbox / "apptainer.log")
+        return env
+
+    def _log(self, path: Path) -> str:
+        return path.read_text() if path.exists() else ""
+
+    def test_bare_metal_default_when_no_sif(self, sandbox: Path) -> None:
+        env = self._env(sandbox)
+        self._run(env=env, sandbox=sandbox)
+        assert "run" in self._log(sandbox / "uv.log")
+        assert self._log(sandbox / "apptainer.log") == ""
+
+    def test_apptainer_mode_when_sif_present(self, sandbox: Path) -> None:
+        (sandbox / "flaime-demo.sif").touch()
+        env = self._env(sandbox)
+        self._run(env=env, sandbox=sandbox)
+        assert "run" in self._log(sandbox / "apptainer.log")
+        assert self._log(sandbox / "uv.log") == ""
+
+    def test_uv_sync_runs_when_venv_missing(self, sandbox: Path) -> None:
+        env = self._env(sandbox)
+        self._run(env=env, sandbox=sandbox)
+        assert "sync" in self._log(sandbox / "uv.log")
+
+    def test_uv_sync_skipped_when_venv_warm(self, sandbox: Path) -> None:
+        venv = sandbox / ".venv"
+        venv.mkdir()
+        pyvenv_cfg = venv / "pyvenv.cfg"
+        pyvenv_cfg.write_text("")
+        now = time.time()
+        os.utime(sandbox / "uv.lock", (now - 10, now - 10))
+        os.utime(pyvenv_cfg, (now, now))
+        env = self._env(sandbox)
+        self._run(env=env, sandbox=sandbox)
+        log = self._log(sandbox / "uv.log")
+        assert "sync" not in log
+        assert "run" in log
+
+    def _run(self, env: dict[str, str], sandbox: Path) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["bash", str(sandbox / "scripts" / "demo.sh")],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
 
 
 # ── .env.example ─────────────────────────────────────────────────────────────
