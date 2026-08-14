@@ -266,6 +266,68 @@ class TestDemoSh:
         assert "checkpoint" in result.stderr.lower()
 
 
+# ── demo.sh bootstrap preamble (26Q3-REPO-22) ───────────────────────────────────
+
+
+class TestDemoShBootstrap:
+    """Self-bootstrapping preamble: .env creation + the checkpoint-staging gate.
+
+    Runs demo.sh from a *sandboxed* repo root (script + .env.example copied into
+    tmp_path), not the real checkout — the bootstrap preamble writes `.env` next
+    to demo.sh, and this suite must never touch the developer's real `.env`.
+    """
+
+    @pytest.fixture
+    def sandbox(self, tmp_path: Path) -> Path:
+        scripts_dir = tmp_path / "scripts"
+        scripts_dir.mkdir()
+        sandboxed_sh = scripts_dir / "demo.sh"
+        sandboxed_sh.write_bytes(DEMO_SH.read_bytes())
+        sandboxed_sh.chmod(DEMO_SH.stat().st_mode)
+        (tmp_path / ".env.example").write_bytes(ENV_EXAMPLE.read_bytes())
+        return tmp_path
+
+    def _run(self, sandbox: Path, env: dict[str, str]) -> subprocess.CompletedProcess:
+        return subprocess.run(
+            ["bash", str(sandbox / "scripts" / "demo.sh")],
+            capture_output=True,
+            text=True,
+            env=env,
+        )
+
+    def test_creates_env_from_example_when_missing(self, sandbox: Path) -> None:
+        assert not (sandbox / ".env").exists()
+        env = dict(os.environ.items())
+        env.pop("CHECKPOINTS_DIR", None)
+        env["FLAIME_SIF"] = str(sandbox / "fake.sif")
+        (sandbox / "fake.sif").touch()  # skip the apptainer build step
+        self._run(sandbox, env)
+        assert (sandbox / ".env").exists(), "demo.sh must create .env from .env.example"
+
+    def test_exits_with_fetch_instructions_when_checkpoints_dir_unset(
+        self, sandbox: Path
+    ) -> None:
+        env = dict(os.environ.items())
+        env.pop("CHECKPOINTS_DIR", None)
+        env["FLAIME_SIF"] = str(sandbox / "fake.sif")
+        (sandbox / "fake.sif").touch()  # skip the apptainer build step
+        result = self._run(sandbox, env)
+        assert result.returncode != 0
+        assert "fetch_checkpoints.sh" in result.stderr, (
+            "demo.sh must point the operator at the exact staging command, "
+            f"got stderr: {result.stderr!r}"
+        )
+
+    def test_does_not_fetch_checkpoints_itself(self, sandbox: Path) -> None:
+        """Staging may need credentials the launcher shouldn't assume."""
+        env = dict(os.environ.items())
+        env.pop("CHECKPOINTS_DIR", None)
+        env["FLAIME_SIF"] = str(sandbox / "fake.sif")
+        (sandbox / "fake.sif").touch()
+        self._run(sandbox, env)
+        assert not (sandbox / "checkpoints").exists()
+
+
 # ── .env.example ─────────────────────────────────────────────────────────────
 
 
