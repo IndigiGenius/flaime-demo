@@ -1,12 +1,14 @@
 #!/usr/bin/env bash
-# scripts/demo.sh — one-command flaime-demo launcher
+# scripts/demo.sh — self-bootstrapping flaime-demo launcher
 #
-# Builds the Apptainer image if absent, then launches the Streamlit UI.
-# The build step is skipped automatically when the .sif already exists.
+# Creates .env from .env.example on first run, builds the Apptainer image if
+# absent, then launches the Streamlit UI. The build step is skipped
+# automatically when the .sif already exists.
 #
 # One-time setup:
-#   cp .env.example .env   # fill in CHECKPOINTS_DIR
-#   bash scripts/demo.sh
+#   bash scripts/demo.sh          # creates .env on first run
+#   $EDITOR .env                  # set CHECKPOINTS_DIR, then re-run
+#   ./scripts/fetch_checkpoints.sh --dest ./checkpoints   # if not staged yet
 #
 # Usage:
 #   bash scripts/demo.sh [OPTIONS]
@@ -38,6 +40,14 @@ set -euo pipefail
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
 ENV_FILE="${REPO_ROOT}/.env"
+ENV_EXAMPLE_FILE="${REPO_ROOT}/.env.example"
+
+# Bootstrap: create .env from the template on first run so a fresh clone never
+# hard-fails for lack of one. Never overwrites an existing .env.
+if [[ ! -f "${ENV_FILE}" ]] && [[ -f "${ENV_EXAMPLE_FILE}" ]]; then
+    cp "${ENV_EXAMPLE_FILE}" "${ENV_FILE}"
+    echo "==> Created .env from .env.example — set CHECKPOINTS_DIR before staging checkpoints"
+fi
 
 # Load .env if present, but only for vars not already in the environment.
 # Explicit env vars always take precedence over .env defaults.
@@ -72,7 +82,20 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# ── Step 1: build ─────────────────────────────────────────────────────────────
+# ── Step 1: validate checkpoints ──────────────────────────────────────────────
+# Checked before the (slow) build step so a fresh clone fails fast with an
+# actionable command instead of waiting 5-10 min to be told the same thing.
+# demo.sh never stages checkpoints itself — fetching may need credentials
+# (HF_TOKEN, etc.) the launcher shouldn't assume.
+if [[ ! -d "${CHECKPOINTS}" ]]; then
+    echo "Error: no checkpoints staged at ${CHECKPOINTS}" >&2
+    echo "  Stage them first, then re-run:" >&2
+    echo "    ./scripts/fetch_checkpoints.sh --dest ./checkpoints" >&2
+    exit 1
+fi
+echo "==> Checkpoints: ${CHECKPOINTS}"
+
+# ── Step 2: build ─────────────────────────────────────────────────────────────
 if [[ ! -f "${SIF}" ]] || [[ "${REBUILD}" -eq 1 ]]; then
     echo "==> Building Apptainer image (~5-10 min on first run)…"
     apptainer build "${SIF}" "${REPO_ROOT}/flaime-demo.def"
@@ -80,14 +103,6 @@ if [[ ! -f "${SIF}" ]] || [[ "${REBUILD}" -eq 1 ]]; then
 else
     echo "==> Image already present — skipping build  (--rebuild to force)"
 fi
-
-# ── Step 2: validate checkpoints ──────────────────────────────────────────────
-if [[ ! -d "${CHECKPOINTS}" ]]; then
-    echo "Error: checkpoints directory not found: ${CHECKPOINTS}" >&2
-    echo "  Set CHECKPOINTS_DIR in .env or pass --checkpoints <dir>." >&2
-    exit 1
-fi
-echo "==> Checkpoints: ${CHECKPOINTS}"
 
 # Resolve a bare checkpoint filename to its in-container path. CHECKPOINTS_DIR is
 # mounted read-only at /checkpoints, so only the filename differs between host and
