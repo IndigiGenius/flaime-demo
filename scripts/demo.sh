@@ -172,9 +172,16 @@ if [[ "${MODE}" == "apptainer" ]]; then
         --server.address "${BIND_ADDR}"
 else
     # ── Bare metal: uv sync (if stale) → uv run ─────────────────────────────
-    if [[ ! -d "${REPO_ROOT}/.venv" ]] || [[ "${REPO_ROOT}/uv.lock" -nt "${REPO_ROOT}/.venv/pyvenv.cfg" ]]; then
+    # Our own stamp, not anything `uv` manages: a no-op `uv sync` (nothing to
+    # install) doesn't reliably bump any file inside .venv, so staleness can't
+    # be inferred from .venv's own contents — only from whether *we* last
+    # synced after uv.lock's current mtime.
+    UV_SYNC_STAMP="${REPO_ROOT}/.venv/.uv-sync-stamp"
+    if [[ ! -d "${REPO_ROOT}/.venv" ]] || [[ "${REPO_ROOT}/uv.lock" -nt "${UV_SYNC_STAMP}" ]]; then
         echo "==> Syncing dependencies (uv sync)…"
         ( cd "${REPO_ROOT}" && uv sync )
+        mkdir -p "${REPO_ROOT}/.venv"
+        touch "${UV_SYNC_STAMP}"
     else
         echo "==> Dependencies already synced — skipping uv sync"
     fi

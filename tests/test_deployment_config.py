@@ -394,13 +394,17 @@ class TestDemoShBareMetal:
         assert "sync" in self._log(sandbox / "uv.log")
 
     def test_uv_sync_skipped_when_venv_warm(self, sandbox: Path) -> None:
+        # demo.sh's own stamp, not anything uv touches: a real `uv sync` that
+        # finds nothing to do doesn't necessarily bump pyvenv.cfg's mtime (an
+        # already-audited-and-satisfied venv left it untouched against a real
+        # checkout), so the staleness check can't rely on that file.
         venv = sandbox / ".venv"
         venv.mkdir()
-        pyvenv_cfg = venv / "pyvenv.cfg"
-        pyvenv_cfg.write_text("")
+        stamp = venv / ".uv-sync-stamp"
+        stamp.write_text("")
         now = time.time()
         os.utime(sandbox / "uv.lock", (now - 10, now - 10))
-        os.utime(pyvenv_cfg, (now, now))
+        os.utime(stamp, (now, now))
         env = self._env(sandbox)
         self._run(env=env, sandbox=sandbox)
         log = self._log(sandbox / "uv.log")
